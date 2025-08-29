@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Nilai Rata-rata Siswa</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .subject-inputs {
+            margin-top: 20px;
+        }
+        .subject-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .subject-input label {
+            min-width: 200px;
+            margin-bottom: 0;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .results h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .grade-A {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .grade-B {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .grade-C {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .grade-D {
+            color: #d35400;
+            font-weight: bold;
+        }
+        .grade-E {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Program Nilai Rata-rata Siswa</h1>
+        
+        <div class="form-group">
+            <label for="subject-count">Jumlah Mata Pelajaran:</label>
+            <input type="number" id="subject-count" min="1" max="20" value="5">
+            <button onclick="generateSubjectInputs()">Generate Input Nilai</button>
+        </div>
+        
+        <div id="subject-inputs" class="subject-inputs">
+            <!-- Input fields for subjects will be generated here -->
+        </div>
+        
+        <button onclick="calculateResults()" id="calculate-btn" style="display: none;">Hitung Nilai Rata-rata</button>
+        
+        <div id="results" class="results">
+            <h2>Hasil Perhitungan</h2>
+            <p><strong>Jumlah Mata Pelajaran:</strong> <span id="result-count"></span></p>
+            <p><strong>Nilai Rata-rata:</strong> <span id="result-average"></span></p>
+            <p><strong>Predikat:</strong> <span id="result-grade"></span></p>
+            <p><strong>Nilai Tertinggi:</strong> <span id="result-max"></span></p>
+            <p><strong>Nilai Terendah:</strong> <span id="result-min"></span></p>
+            
+            <h3>Daftar Nilai:</h3>
+            <ul id="result-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        function generateSubjectInputs() {
+            const subjectCount = parseInt(document.getElementById('subject-count').value);
+            const subjectInputsDiv = document.getElementById('subject-inputs');
+            const calculateBtn = document.getElementById('calculate-btn');
+            
+            // Validate input
+            if (isNaN(subjectCount) || subjectCount <= 0 || subjectCount > 20) {
+                alert('Masukkan jumlah mata pelajaran antara 1 dan 20');
+                return;
+            }
+            
+            // Clear previous inputs
+            subjectInputsDiv.innerHTML = '';
+            
+            // Generate new inputs
+            for (let i = 1; i <= subjectCount; i++) {
+                const subjectDiv = document.createElement('div');
+                subjectDiv.className = 'subject-input';
+                
+                const label = document.createElement('label');
+                label.textContent = `Nilai Mata Pelajaran ke-${i}:`;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.max = '100';
+                input.step = '0.01';
+                input.id = `subject-${i}`;
+                input.className = 'subject-input-field';
+                
+                subjectDiv.appendChild(label);
+                subjectDiv.appendChild(input);
+                subjectInputsDiv.appendChild(subjectDiv);
+            }
+            
+            // Show calculate button
+            calculateBtn.style.display = 'block';
+        }
+        
+        function calculateResults() {
+            const subjectCount = parseInt(document.getElementById('subject-count').value);
+            const grades = [];
+            let hasError = false;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error').forEach(el => el.remove());
+            
+            // Collect grades and validate
+            for (let i = 1; i <= subjectCount; i++) {
+                const gradeInput = document.getElementById(`subject-${i}`);
+                const gradeValue = parseFloat(gradeInput.value);
+                
+                if (isNaN(gradeValue) || gradeValue < 0 || gradeValue > 100) {
+                    const error = document.createElement('div');
+                    error.className = 'error';
+                    error.textContent = 'Nilai harus antara 0 dan 100';
+                    gradeInput.parentNode.appendChild(error);
+                    hasError = true;
+                } else {
+                    grades.push(gradeValue);
+                }
+            }
+            
+            if (hasError) {
+                return;
+            }
+            
+            // Calculate results
+            const average = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+            const maxGrade = Math.max(...grades);
+            const minGrade = Math.min(...grades);
+            
+            // Determine grade
+            let gradeText, gradeClass;
+            if (average >= 90) {
+                gradeText = 'A (Sangat Baik)';
+                gradeClass = 'grade-A';
+            } else if (average >= 80) {
+                gradeText = 'B (Baik)';
+                gradeClass = 'grade-B';
+            } else if (average >= 70) {
+                gradeText = 'C (Cukup)';
+                gradeClass = 'grade-C';
+            } else if (average >= 60) {
+                gradeText = 'D (Kurang)';
+                gradeClass = 'grade-D';
+            } else {
+                gradeText = 'E (Sangat Kurang)';
+                gradeClass = 'grade-E';
+            }
+            
+            // Display results
+            document.getElementById('result-count').textContent = subjectCount;
+            document.getElementById('result-average').textContent = average.toFixed(2);
+            document.getElementById('result-max').textContent = maxGrade.toFixed(2);
+            document.getElementById('result-min').textContent = minGrade.toFixed(2);
+            
+            const resultGrade = document.getElementById('result-grade');
+            resultGrade.textContent = gradeText;
+            resultGrade.className = gradeClass;
+            
+            // Display grade list
+            const resultList = document.getElementById('result-list');
+            resultList.innerHTML = '';
+            
+            grades.forEach((grade, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Mata Pelajaran ke-${index + 1}: ${grade.toFixed(2)}`;
+                resultList.appendChild(listItem);
+            });
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        // Generate inputs on page load for default value
+        window.onload = generateSubjectInputs;
+    </script>
+</body>
+</html>
